@@ -7,15 +7,23 @@
 #include <QGridLayout>
 #include "chartview.h"
 
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
+
 QList<QChart*> myChartList;
 QList<ChartView*> myChartViewList;
 QList<QSplineSeries*> mySplineSeriesList;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow),
+      m_serial(new QSerialPort(this))
 {
     ui->setupUi(this);
+
+    connect(m_serial, &QSerialPort::readyRead, this, &MainWindow::ReadData);
+
+    ui->label_indicator->setStyleSheet("QLabel {color : green; }");
 
     for (int i = 0; i < 8; i++){
         QSplineSeries *series = new QSplineSeries();
@@ -44,8 +52,45 @@ MainWindow::MainWindow(QWidget *parent)
     }
 }
 
+void MainWindow::ReadData(){
+    QByteArray data = m_serial->readAll();
+    QString s(data);
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+void MainWindow::on_pushButton_find_clicked()
+{
+    ui->comboBox_ports->clear();
+    QList<QSerialPortInfo> infoList = QSerialPortInfo::availablePorts();
+    foreach(QSerialPortInfo info, infoList) {
+        if (info.productIdentifier() != 0) ui->comboBox_ports->addItem(info.portName());
+
+        qDebug() << info.vendorIdentifier();
+        qDebug() << info.productIdentifier();
+    }
+}
+
+
+void MainWindow::on_pushButton_connect_clicked()
+{
+    m_serial->setPortName(ui->comboBox_ports->currentText());
+    // указали скорость
+    m_serial->setBaudRate(QSerialPort::Baud9600);
+
+    m_serial->setDataBits(QSerialPort::Data8);
+
+    m_serial->setFlowControl(QSerialPort::NoFlowControl);
+
+    // пробуем подключится
+    if (!m_serial->open(QIODevice::ReadWrite)) {
+        // если подключится не получится, то покажем сообщение с ошибкой
+         qDebug() << "Ошибка, не удалось подключится к порту";
+        return;
+    } else {qDebug() << "connect";}
 }
 

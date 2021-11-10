@@ -10,6 +10,9 @@
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 
+#include <QDialog>
+#include <QFileDialog>
+
 QList<QChart*> myChartList;
 QList<ChartView*> myChartViewList;
 QList<QSplineSeries*> mySplineSeriesList;
@@ -24,6 +27,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_serial, &QSerialPort::readyRead, this, &MainWindow::ReadData);
 
     ui->label_indicator->setStyleSheet("QLabel {color : green; }");
+
+    QString path = QDir::currentPath() + "/results";
+    ui->lineEdit_directory->setText(path);
+
+    ui->lineEdit_start->setText("100");
+    ui->lineEdit_stop->setText("300");
+    ui->lineEdit_threshold->setText("4.2");
 
     for (int i = 0; i < 8; i++){
         QSplineSeries *series = new QSplineSeries();
@@ -65,6 +75,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_find_clicked()
 {
+    m_serial->close();
     ui->comboBox_ports->clear();
     QList<QSerialPortInfo> infoList = QSerialPortInfo::availablePorts();
     foreach(QSerialPortInfo info, infoList) {
@@ -92,5 +103,20 @@ void MainWindow::on_pushButton_connect_clicked()
          qDebug() << "Ошибка, не удалось подключится к порту";
         return;
     } else {qDebug() << "connect";}
+}
+
+
+void MainWindow::on_pushButton_directory_clicked()
+{
+    QString path = QFileDialog::getExistingDirectory();
+    ui->lineEdit_directory->setText(path);
+}
+
+
+void MainWindow::on_pushButton_view_clicked()
+{
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open File"), ui->lineEdit_directory->text(), tr("Csv Files (*.csv)"));
 }
 

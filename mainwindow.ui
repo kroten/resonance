@@ -50,23 +50,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QTextEdit" name="textEdit">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>23</height>
-           </size>
+         <widget class="QLineEdit" name="lineEdit_directory">
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="pushButton_directory">
           <property name="text">
            <string>Dir</string>
           </property>
@@ -77,7 +68,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QCheckBox" name="checkBox_save">
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -104,12 +95,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="textEdit_2">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>23</height>
-           </size>
+         <widget class="QLineEdit" name="lineEdit_start">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -128,12 +116,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="textEdit_3">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>23</height>
-           </size>
+         <widget class="QLineEdit" name="lineEdit_stop">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -142,7 +127,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
+         <widget class="QCheckBox" name="checkBox_auto">
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -156,7 +141,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_9">
         <item>
-         <widget class="QCheckBox" name="checkBox_3">
+         <widget class="QCheckBox" name="checkBox_step">
           <property name="layoutDirection">
            <enum>Qt::RightToLeft</enum>
           </property>
@@ -180,17 +165,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="textEdit_4">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>23</height>
-           </size>
+         <widget class="QLineEdit" name="lineEdit_threshold">
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_5">
+         <widget class="QPushButton" name="pushButton_change">
           <property name="text">
            <string>Change</string>
           </property>
@@ -201,14 +183,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_10">
         <item>
-         <widget class="QPushButton" name="pushButton_6">
+         <widget class="QPushButton" name="pushButton_start">
           <property name="text">
            <string>Start</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_4">
+         <widget class="QPushButton" name="pushButton_stop">
           <property name="text">
            <string>Stop</string>
           </property>
@@ -529,14 +511,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="label_frequency">
           <property name="text">
            <string>0</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_7">
+         <widget class="QPushButton" name="pushButton_view">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -544,7 +526,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>PushButton</string>
+           <string>View file</string>
           </property>
          </widget>
         </item>

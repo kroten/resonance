@@ -134,6 +134,9 @@
           <property name="text">
            <string>Auto (step 1Hz + detailing 0.1Hz)</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -307,7 +310,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLabel" name="label_18">
+         <widget class="QLabel" name="freqW0">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -317,7 +320,7 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QLabel" name="label_19">
+         <widget class="QLabel" name="freqW1">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -327,7 +330,7 @@
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QLabel" name="label_20">
+         <widget class="QLabel" name="freqW2">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -337,7 +340,7 @@
          </widget>
         </item>
         <item row="4" column="1">
-         <widget class="QLabel" name="label_21">
+         <widget class="QLabel" name="freqW3">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -347,7 +350,7 @@
          </widget>
         </item>
         <item row="5" column="1">
-         <widget class="QLabel" name="label_22">
+         <widget class="QLabel" name="freqW4">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -357,7 +360,7 @@
          </widget>
         </item>
         <item row="6" column="1">
-         <widget class="QLabel" name="label_23">
+         <widget class="QLabel" name="freqW5">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -367,7 +370,7 @@
          </widget>
         </item>
         <item row="7" column="1">
-         <widget class="QLabel" name="label_24">
+         <widget class="QLabel" name="freqW6">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -377,7 +380,7 @@
          </widget>
         </item>
         <item row="8" column="1">
-         <widget class="QLabel" name="label_25">
+         <widget class="QLabel" name="freqW7">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -387,7 +390,7 @@
          </widget>
         </item>
         <item row="1" column="2">
-         <widget class="QLabel" name="label_26">
+         <widget class="QLabel" name="spanW0">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -397,7 +400,7 @@
          </widget>
         </item>
         <item row="2" column="2">
-         <widget class="QLabel" name="label_27">
+         <widget class="QLabel" name="spanW1">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -407,7 +410,7 @@
          </widget>
         </item>
         <item row="3" column="2">
-         <widget class="QLabel" name="label_28">
+         <widget class="QLabel" name="spanW2">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -417,7 +420,7 @@
          </widget>
         </item>
         <item row="4" column="2">
-         <widget class="QLabel" name="label_29">
+         <widget class="QLabel" name="spanW3">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -427,7 +430,7 @@
          </widget>
         </item>
         <item row="5" column="2">
-         <widget class="QLabel" name="label_30">
+         <widget class="QLabel" name="spanW4">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -437,7 +440,7 @@
          </widget>
         </item>
         <item row="6" column="2">
-         <widget class="QLabel" name="label_31">
+         <widget class="QLabel" name="spanW5">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -447,7 +450,7 @@
          </widget>
         </item>
         <item row="7" column="2">
-         <widget class="QLabel" name="label_32">
+         <widget class="QLabel" name="spanW6">
           <property name="text">
            <string>0.00</string>
           </property>
@@ -457,7 +460,7 @@
          </widget>
         </item>
         <item row="8" column="2">
-         <widget class="QLabel" name="label_33">
+         <widget class="QLabel" name="spanW7">
           <property name="text">
            <string>0.00</string>
           </property>

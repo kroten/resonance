@@ -16,6 +16,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void ReadData();
+    void change_mode();
+    void change_mode_1();
 
 private slots:
     void on_pushButton_find_clicked();
@@ -25,6 +27,12 @@ private slots:
     void on_pushButton_directory_clicked();
 
     void on_pushButton_view_clicked();
+
+    void on_pushButton_start_clicked();
+
+    void on_pushButton_stop_clicked();
+
+    void on_pushButton_change_clicked();
 
 private:
     Ui::MainWindow *ui;

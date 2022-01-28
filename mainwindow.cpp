@@ -37,6 +37,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lineEdit_stop->setText("300");
     ui->lineEdit_threshold->setText("4.2");
 
+    locked_all();
+
+    QList<QSerialPortInfo> infoList = QSerialPortInfo::availablePorts();
+    foreach(QSerialPortInfo info, infoList) {
+        if (info.productIdentifier() != 0) ui->comboBox_ports->addItem(info.portName());
+
+        qDebug() << info.vendorIdentifier();
+        qDebug() << info.productIdentifier();
+    }
+
     for (int i = 0; i < 8; i++){
         QSplineSeries *series = new QSplineSeries();
         series->setName("spline");
@@ -64,12 +74,46 @@ MainWindow::MainWindow(QWidget *parent)
     }
 }
 
+bool recieve = 0;
+bool datas = 0;
+bool thresh = 0;
+bool ending = 0;
+bool finish = 0;
+
 void MainWindow::ReadData(){
     QByteArray data = m_serial->readAll();
     QString s(data);
 
-    qDebug() << s;
-//    qDebug() << '1';
+    qDebug() << data;
+//    for(int k = 0; k<s.size(); k++){
+//          qDebug() << s[k];
+//        if (k == '^') {recieve = true;}
+//        else if (recieve && !datas && !thresh && !ending && !finish) {
+//            switch (k)
+//            {
+//            case 'd':
+//                datas = true;
+//                break;
+//            case 't':
+//                thresh = true;
+//                break;
+//            case 'e':
+//                ending = true;
+//                break;
+//            case 'f':
+//                finish = true;
+//                break;
+//            }
+//            continue;
+//        }
+//        else if (recieve && datas && k != ';') {}
+//        else if (recieve && thresh && k != ';') {}
+//        else if (recieve && ending && k != ';') {}
+//        else if (recieve && finish && k != ';') {}
+//        else if (k == ';') {
+
+//        }
+//    }
 }
 
 void MainWindow::change_mode(){
@@ -80,10 +124,45 @@ void MainWindow::change_mode_1(){
     ui->checkBox_auto->setChecked(!ui->checkBox_step->checkState());
 }
 
+void MainWindow::locked_all(){
+    ui->checkBox_auto->setDisabled(1);
+    ui->checkBox_save->setDisabled(1);
+    ui->checkBox_step->setDisabled(1);
+    ui->lineEdit_directory->setDisabled(1);
+    ui->lineEdit_start->setDisabled(1);
+    ui->lineEdit_stop->setDisabled(1);
+    ui->lineEdit_threshold->setDisabled(1);
+    ui->pushButton_change->setDisabled(1);
+    ui->pushButton_directory->setDisabled(1);
+    ui->pushButton_start->setDisabled(1);
+    ui->pushButton_stop->setDisabled(1);
+    ui->label->setDisabled(1);
+    ui->label_2->setDisabled(1);
+    ui->label_3->setDisabled(1);
+}
+
+void MainWindow::unlocked_all(){
+    ui->checkBox_auto->setEnabled(1);
+    ui->checkBox_save->setEnabled(1);
+    ui->checkBox_step->setEnabled(1);
+    ui->lineEdit_directory->setEnabled(1);
+    ui->lineEdit_start->setEnabled(1);
+    ui->lineEdit_stop->setEnabled(1);
+    ui->lineEdit_threshold->setEnabled(1);
+    ui->pushButton_change->setEnabled(1);
+    ui->pushButton_directory->setEnabled(1);
+    ui->pushButton_start->setEnabled(1);
+    ui->pushButton_stop->setEnabled(1);
+    ui->label->setEnabled(1);
+    ui->label_2->setEnabled(1);
+    ui->label_3->setEnabled(1);
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 
 
 void MainWindow::on_pushButton_find_clicked()
@@ -114,8 +193,14 @@ void MainWindow::on_pushButton_connect_clicked()
     if (!m_serial->open(QIODevice::ReadWrite)) {
         // если подключится не получится, то покажем сообщение с ошибкой
          qDebug() << "Ошибка, не удалось подключится к порту";
-        return;
-    } else {qDebug() << "connect";}
+         locked_all();
+         m_serial->close();
+         QMessageBox::warning(this, "Attention","Unable to connect");
+         return;
+    } else {
+        qDebug() << "connect";
+        unlocked_all();
+    }
 }
 
 
@@ -123,6 +208,10 @@ void MainWindow::on_pushButton_directory_clicked()
 {
     QString path = QFileDialog::getExistingDirectory();
     ui->lineEdit_directory->setText(path);
+    if (path == ""){
+        path = QDir::currentPath() + "/results";
+        ui->lineEdit_directory->setText(path);
+    }
 }
 
 
@@ -189,7 +278,6 @@ void MainWindow::on_pushButton_view_clicked()
             for (int k = 1; k < 9; k++) {
                 if (wordList.at(k).toDouble() > max) {
                     max = wordList.at(k).toDouble();
-                    qDebug() << max;
                 }
             }
         }
@@ -206,7 +294,14 @@ void MainWindow::on_pushButton_view_clicked()
 void MainWindow::on_pushButton_start_clicked()
 {
     QByteArray ba;
-    QString str = "^s_100_101_0;";
+    QString str = "^s_";
+    str.append(ui->lineEdit_start->text());
+    str.append('_');
+    str.append(ui->lineEdit_stop->text());
+    str.append('_');
+    if(ui->checkBox_auto->isChecked()){str.append('1');}
+    else str.append('0');
+    str.append(';');
     ba = str.toUtf8();
     ba.toBase64();
     m_serial->write(ba);
@@ -228,7 +323,9 @@ void MainWindow::on_pushButton_stop_clicked()
 void MainWindow::on_pushButton_change_clicked()
 {
     QByteArray ba;
-    QString str = "^t_20;";
+    QString str = "^t_";
+    str.append(ui->lineEdit_threshold->text());
+    str.append(';');
     ba = str.toUtf8();
     ba.toBase64();
     m_serial->write(ba);

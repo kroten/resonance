@@ -18,6 +18,8 @@ public:
     void ReadData();
     void change_mode();
     void change_mode_1();
+    void locked_all();
+    void unlocked_all();
 
 private slots:
     void on_pushButton_find_clicked();

@@ -79,41 +79,59 @@ bool datas = 0;
 bool thresh = 0;
 bool ending = 0;
 bool finish = 0;
+int element_num = 0;
+QString word = "";
+QString values[9];
 
 void MainWindow::ReadData(){
     QByteArray data = m_serial->readAll();
     QString s(data);
 
-    qDebug() << data;
-//    for(int k = 0; k<s.size(); k++){
-//          qDebug() << s[k];
-//        if (k == '^') {recieve = true;}
-//        else if (recieve && !datas && !thresh && !ending && !finish) {
-//            switch (k)
-//            {
-//            case 'd':
-//                datas = true;
-//                break;
-//            case 't':
-//                thresh = true;
-//                break;
-//            case 'e':
-//                ending = true;
-//                break;
-//            case 'f':
-//                finish = true;
-//                break;
-//            }
-//            continue;
-//        }
-//        else if (recieve && datas && k != ';') {}
-//        else if (recieve && thresh && k != ';') {}
-//        else if (recieve && ending && k != ';') {}
-//        else if (recieve && finish && k != ';') {}
-//        else if (k == ';') {
-
-//        }
-//    }
+    //qDebug() << s[0];
+    for(int k = 0; k<s.size(); k++){
+        //qDebug() << s[k];
+        if (s[k] == '^') {recieve = true; qDebug() << s[k];}
+        else if (recieve && !datas && !thresh && !ending && !finish) {
+            if (s[k] == 'd'){
+                datas = true;
+                qDebug() << "datas";
+            }
+            else if (s[k] == 't'){thresh = true;}
+            else if (s[k] == 'e'){ending = true;}
+            else if (s[k] == 'f'){finish = true;}
+        }
+        else if (recieve && datas && s[k] != ';') {
+            if (s[k] == '_'){
+                qDebug() << word;
+                if (word == "") continue;
+                values[element_num] = word;
+                element_num++;
+                word = "";
+            }
+            else {
+                word.append(s[k]);
+            }
+        }
+        //else if (recieve && thresh && k != ';') {}
+        //else if (recieve && ending && k != ';') {}
+        //else if (recieve && finish && k != ';') {}
+        else if (s[k] == ';') {
+            recieve = false;
+            if (thresh){}
+            if (ending){}
+            if (finish){}
+            if (datas){
+                qDebug() << element_num;
+                values[element_num] = word;
+                element_num = 0;
+                word = "";
+                datas = false;
+                for (int l = 0; l < 8; l++){
+                    mySplineSeriesList[l]->append(values[8].toDouble(), values[l].toDouble());
+                }
+            }
+        }
+    }
 }
 
 void MainWindow::change_mode(){
@@ -219,8 +237,8 @@ void MainWindow::on_pushButton_view_clicked()
 {
     for (int i = 0; i < 8; i++){
         mySplineSeriesList.at(i)->clear();
-        myChartList[i]->axes(Qt::Vertical).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
-        myChartList[i]->axes(Qt::Horizontal).first()->setRange(0, 20);
+        myChartList[i]->axes(Qt::Horizontal).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
+        myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
     }
 
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -306,6 +324,19 @@ void MainWindow::on_pushButton_start_clicked()
     ba.toBase64();
     m_serial->write(ba);
     qDebug() << ba;
+
+    for (int i = 0; i < 8; i++){
+        mySplineSeriesList.at(i)->clear();
+        myChartList[i]->axes(Qt::Horizontal).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
+        myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
+    }
+    recieve = 0;
+    datas = 0;
+    thresh = 0;
+    ending = 0;
+    finish = 0;
+    element_num = 0;
+    QString word = "";
 }
 
 

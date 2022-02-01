@@ -13,6 +13,8 @@
 #include <QDialog>
 #include <QFileDialog>
 
+#include "windows.h"
+
 QList<QChart*> myChartList;
 QList<ChartView*> myChartViewList;
 QList<QSplineSeries*> mySplineSeriesList;
@@ -25,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     connect(m_serial, &QSerialPort::readyRead, this, &MainWindow::ReadData);
+    connect(m_serial, &QSerialPort::errorOccurred, this, &MainWindow::PortClosed);
+    //connect(m_serial, &QSerialPort::errorOccurred, this, qDebug() << m_serial->errorString());
     connect(ui->checkBox_auto, &QCheckBox::stateChanged, this, &MainWindow::change_mode);
     connect(ui->checkBox_step, &QCheckBox::stateChanged, this, &MainWindow::change_mode_1);
 
@@ -80,8 +84,11 @@ bool thresh = 0;
 bool ending = 0;
 bool finish = 0;
 int element_num = 0;
+float max = 18;
 QString word = "";
 QString values[9];
+QString freqs[8];
+QString spans[8];
 
 void MainWindow::ReadData(){
     QByteArray data = m_serial->readAll();
@@ -89,7 +96,7 @@ void MainWindow::ReadData(){
 
     //qDebug() << s[0];
     for(int k = 0; k<s.size(); k++){
-        //qDebug() << s[k];
+        qDebug() << s[k];
         if (s[k] == '^') {recieve = true; qDebug() << s[k];}
         else if (recieve && !datas && !thresh && !ending && !finish) {
             if (s[k] == 'd'){
@@ -105,6 +112,12 @@ void MainWindow::ReadData(){
                 qDebug() << word;
                 if (word == "") continue;
                 values[element_num] = word;
+                if (word.toDouble() > max) {
+                    max = word.toDouble();
+                    for (int i = 0; i < 8; i++){
+                        myChartList[i]->axes(Qt::Vertical).first()->setRange(0, max + 2);
+                    }
+                }
                 element_num++;
                 word = "";
             }
@@ -116,18 +129,68 @@ void MainWindow::ReadData(){
         //else if (recieve && ending && k != ';') {}
         //else if (recieve && finish && k != ';') {}
         else if (s[k] == ';') {
+            qDebug() << "here";
             recieve = false;
-            if (thresh){}
-            if (ending){}
-            if (finish){}
+            if (thresh){
+                QMessageBox::information(this, "", "successfull");
+                thresh = false;
+            }
+            if (ending){
+                ending = false;
+                ui->label_frequency->setText("0");
+                qDebug() << "in_ending";
+            }
+            if (finish){
+                unlocked_all();
+                finish = false;
+                ui->label_indicator->setText("OFF");
+                ui->label_indicator->setStyleSheet("QLabel {color : green; }");
+                ui->pushButton_connect->setEnabled(1);
+                ui->pushButton_find->setEnabled(1);
+                ui->pushButton_view->setEnabled(1);
+                ui->pushButton_stop->setDisabled(1);
+                ui->comboBox_ports->setEnabled(1);
+                max = 18;
+                qDebug() << "in_finish";
+            }
             if (datas){
                 qDebug() << element_num;
                 values[element_num] = word;
                 element_num = 0;
                 word = "";
                 datas = false;
+                ui->label_frequency->setText(values[8]);
                 for (int l = 0; l < 8; l++){
                     mySplineSeriesList[l]->append(values[8].toDouble(), values[l].toDouble());
+                    if (values[l].toDouble() > freqs[l].toDouble() && values[l].toDouble() > ui->lineEdit_threshold->text().toDouble()){
+                        freqs[l] = values[l];
+                        switch (l){
+                        case 0:
+                            ui->freqW0->setText(freqs[l]);
+                            break;
+                        case 1:
+                            ui->freqW1->setText(freqs[l]);
+                            break;
+                        case 2:
+                            ui->freqW2->setText(freqs[l]);
+                            break;
+                        case 3:
+                            ui->freqW3->setText(freqs[l]);
+                            break;
+                        case 4:
+                            ui->freqW4->setText(freqs[l]);
+                            break;
+                        case 5:
+                            ui->freqW5->setText(freqs[l]);
+                            break;
+                        case 6:
+                            ui->freqW6->setText(freqs[l]);
+                            break;
+                        case 7:
+                            ui->freqW7->setText(freqs[l]);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -153,10 +216,30 @@ void MainWindow::locked_all(){
     ui->pushButton_change->setDisabled(1);
     ui->pushButton_directory->setDisabled(1);
     ui->pushButton_start->setDisabled(1);
-    ui->pushButton_stop->setDisabled(1);
     ui->label->setDisabled(1);
     ui->label_2->setDisabled(1);
     ui->label_3->setDisabled(1);
+    ui->pushButton_stop->setDisabled(1);
+}
+
+void MainWindow::clear_SpanFreq() {
+    ui->freqW0->setText("0.00");
+    ui->freqW1->setText("0.00");
+    ui->freqW2->setText("0.00");
+    ui->freqW3->setText("0.00");
+    ui->freqW4->setText("0.00");
+    ui->freqW5->setText("0.00");
+    ui->freqW6->setText("0.00");
+    ui->freqW7->setText("0.00");
+
+    ui->spanW0->setText("0.00");
+    ui->spanW1->setText("0.00");
+    ui->spanW2->setText("0.00");
+    ui->spanW3->setText("0.00");
+    ui->spanW4->setText("0.00");
+    ui->spanW5->setText("0.00");
+    ui->spanW6->setText("0.00");
+    ui->spanW7->setText("0.00");
 }
 
 void MainWindow::unlocked_all(){
@@ -170,10 +253,41 @@ void MainWindow::unlocked_all(){
     ui->pushButton_change->setEnabled(1);
     ui->pushButton_directory->setEnabled(1);
     ui->pushButton_start->setEnabled(1);
-    ui->pushButton_stop->setEnabled(1);
     ui->label->setEnabled(1);
     ui->label_2->setEnabled(1);
     ui->label_3->setEnabled(1);
+}
+
+void MainWindow::PortClosed(){
+    if (m_serial->error() == QSerialPort::PermissionError) {
+        qDebug() << m_serial->error();
+        locked_all();
+//        clear_SpanFreq();
+//        for (int i = 0; i < 8; i++){
+//            mySplineSeriesList.at(i)->clear();
+//            myChartList[i]->axes(Qt::Horizontal).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
+//            myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
+//        }
+
+        if(m_serial->isOpen()){m_serial->close();}
+        ui->comboBox_ports->clear();
+        QList<QSerialPortInfo> infoList = QSerialPortInfo::availablePorts();
+        foreach(QSerialPortInfo info, infoList) {
+            if (info.productIdentifier() != 0) ui->comboBox_ports->addItem(info.portName());
+        }
+
+        ui->label_indicator->setText("OFF");
+        ui->label_indicator->setStyleSheet("QLabel {color : green; }");
+        ui->label_frequency->setText("0");
+
+        ui->pushButton_find->setEnabled(1);
+        ui->pushButton_connect->setEnabled(1);
+        ui->pushButton_view->setEnabled(1);
+        ui->comboBox_ports->setEnabled(1);
+
+        QMessageBox::warning(this, "Attention","SerialPort closed. Reload the plate");
+
+    } else if (m_serial->error() == QSerialPort::WriteError) {QMessageBox::warning(this, "Attention","Something wrong. Reload all");}
 }
 
 MainWindow::~MainWindow()
@@ -185,7 +299,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_find_clicked()
 {
-    m_serial->close();
+    if (m_serial->isOpen()){m_serial->close();}
     ui->comboBox_ports->clear();
     QList<QSerialPortInfo> infoList = QSerialPortInfo::availablePorts();
     foreach(QSerialPortInfo info, infoList) {
@@ -199,13 +313,17 @@ void MainWindow::on_pushButton_find_clicked()
 
 void MainWindow::on_pushButton_connect_clicked()
 {
+    if (m_serial->isOpen()) {
+        locked_all();
+        m_serial->close();}
     m_serial->setPortName(ui->comboBox_ports->currentText());
-    // указали скорость
     m_serial->setBaudRate(QSerialPort::Baud9600);
-
-    m_serial->setDataBits(QSerialPort::Data8);
-
+    //m_serial->setDataBits(QSerialPort::Data8);
     m_serial->setFlowControl(QSerialPort::NoFlowControl);
+    // указали скорость
+    //if (!m_serial->open(QIODevice::ReadWrite)){}
+
+
 
     // пробуем подключится
     if (!m_serial->open(QIODevice::ReadWrite)) {
@@ -216,7 +334,12 @@ void MainWindow::on_pushButton_connect_clicked()
          QMessageBox::warning(this, "Attention","Unable to connect");
          return;
     } else {
+//        m_serial->setBaudRate(QSerialPort::Baud9600);
+//        m_serial->setDataBits(QSerialPort::Data8);
+//        m_serial->setFlowControl(QSerialPort::NoFlowControl);
+
         qDebug() << "connect";
+        Sleep(2000);
         unlocked_all();
     }
 }
@@ -240,6 +363,8 @@ void MainWindow::on_pushButton_view_clicked()
         myChartList[i]->axes(Qt::Horizontal).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
         myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
     }
+
+    clear_SpanFreq();
 
     QString fileName = QFileDialog::getOpenFileName(this,
                                                     tr("Open File"), ui->lineEdit_directory->text(), tr("Csv Files (*.csv)"));
@@ -325,11 +450,18 @@ void MainWindow::on_pushButton_start_clicked()
     m_serial->write(ba);
     qDebug() << ba;
 
+    max = 18;
+
     for (int i = 0; i < 8; i++){
         mySplineSeriesList.at(i)->clear();
         myChartList[i]->axes(Qt::Horizontal).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
         myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
+        freqs[i] = "0";
+        spans[i] = "0";
     }
+
+    clear_SpanFreq();
+
     recieve = 0;
     datas = 0;
     thresh = 0;
@@ -337,6 +469,16 @@ void MainWindow::on_pushButton_start_clicked()
     finish = 0;
     element_num = 0;
     QString word = "";
+    locked_all();
+    clear_SpanFreq();
+    ui->pushButton_stop->setEnabled(1);
+    ui->pushButton_connect->setDisabled(1);
+    ui->pushButton_find->setDisabled(1);
+    ui->pushButton_view->setDisabled(1);
+    ui->comboBox_ports->setDisabled(1);
+    ui->pushButton_stop->setEnabled(1);
+    ui->label_indicator->setText("ON");
+    ui->label_indicator->setStyleSheet("QLabel {color : red; }");
 }
 
 
@@ -348,6 +490,7 @@ void MainWindow::on_pushButton_stop_clicked()
     ba.toBase64();
     m_serial->write(ba);
     qDebug() << ba;
+    ui->pushButton_stop->setDisabled(1);
 }
 
 

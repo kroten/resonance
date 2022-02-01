@@ -20,6 +20,8 @@ public:
     void change_mode_1();
     void locked_all();
     void unlocked_all();
+    void clear_SpanFreq();
+    void PortClosed();
 
 private slots:
     void on_pushButton_find_clicked();

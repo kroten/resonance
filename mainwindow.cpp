@@ -90,6 +90,16 @@ QString values[9];
 QString freqs[8];
 QString spans[8];
 
+bool above_threshold[8];
+double start_res[8];
+double start_res_temp[8];
+double end_res[8];
+double maxi_res[8];
+//double spans[8];
+bool find_max[8];
+
+
+
 void MainWindow::ReadData(){
     QByteArray data = m_serial->readAll();
     QString s(data);
@@ -162,35 +172,60 @@ void MainWindow::ReadData(){
                 ui->label_frequency->setText(values[8]);
                 for (int l = 0; l < 8; l++){
                     mySplineSeriesList[l]->append(values[8].toDouble(), values[l].toDouble());
-                    if (values[l].toDouble() > freqs[l].toDouble() && values[l].toDouble() > ui->lineEdit_threshold->text().toDouble()){
-                        freqs[l] = values[l];
-                        switch (l){
-                        case 0:
-                            ui->freqW0->setText(freqs[l]);
-                            break;
-                        case 1:
-                            ui->freqW1->setText(freqs[l]);
-                            break;
-                        case 2:
-                            ui->freqW2->setText(freqs[l]);
-                            break;
-                        case 3:
-                            ui->freqW3->setText(freqs[l]);
-                            break;
-                        case 4:
-                            ui->freqW4->setText(freqs[l]);
-                            break;
-                        case 5:
-                            ui->freqW5->setText(freqs[l]);
-                            break;
-                        case 6:
-                            ui->freqW6->setText(freqs[l]);
-                            break;
-                        case 7:
-                            ui->freqW7->setText(freqs[l]);
-                            break;
+                    if (values[l].toDouble() > ui->lineEdit_threshold->text().toDouble()){ // ВОТ ТУТ ПОШЛА ЖАРА СПАН И ФРЕК
+                        above_threshold[l] = true;
+                        start_res_temp[l] = values[8].toDouble();
+                    } else {
+                        above_threshold[l] = false;
+                        if (find_max[l]) {
+                            find_max[l] = false;
+                            end_res[l] = values[8].toDouble();
+                            //freqs[l] = QString::number(maxi_res[l]);
+                            spans[l] = QString::number(end_res[l] - start_res[l]);
+                            switch (l){
+                            case 0:
+                                ui->freqW0->setText(freqs[l]);
+                                ui->spanW0->setText(spans[l]);
+                                break;
+                            case 1:
+                                ui->freqW1->setText(freqs[l]);
+                                ui->spanW1->setText(spans[l]);
+                                break;
+                            case 2:
+                                ui->freqW2->setText(freqs[l]);
+                                ui->spanW2->setText(spans[l]);
+                                break;
+                            case 3:
+                                ui->freqW3->setText(freqs[l]);
+                                ui->spanW3->setText(spans[l]);
+                                break;
+                            case 4:
+                                ui->freqW4->setText(freqs[l]);
+                                ui->spanW4->setText(spans[l]);
+                                break;
+                            case 5:
+                                ui->freqW5->setText(freqs[l]);
+                                ui->spanW5->setText(spans[l]);
+                                break;
+                            case 6:
+                                ui->freqW6->setText(freqs[l]);
+                                ui->spanW6->setText(spans[l]);
+                                break;
+                            case 7:
+                                ui->freqW7->setText(freqs[l]);
+                                ui->spanW7->setText(spans[l]);
+                                break;
+                            }
                         }
                     }
+                    if (above_threshold[l]){
+                        if (values[l].toDouble() > maxi_res[l]){
+                            start_res[l] = start_res_temp[l];
+                            find_max[l] = true;
+                            maxi_res[l] = values[l].toDouble();
+                            freqs[l] = values[8];
+                        }
+                    } // ВОТ ТУТ ЖАРА ЗАКАНЧИВАЕТСЯ
                 }
             }
         }
@@ -279,6 +314,7 @@ void MainWindow::PortClosed(){
         ui->label_indicator->setText("OFF");
         ui->label_indicator->setStyleSheet("QLabel {color : green; }");
         ui->label_frequency->setText("0");
+        ui->lineEdit_threshold->setText("4.2");
 
         ui->pushButton_find->setEnabled(1);
         ui->pushButton_connect->setEnabled(1);
@@ -332,6 +368,14 @@ void MainWindow::on_pushButton_connect_clicked()
          locked_all();
          m_serial->close();
          QMessageBox::warning(this, "Attention","Unable to connect");
+         ui->comboBox_ports->clear();
+         QList<QSerialPortInfo> infoList = QSerialPortInfo::availablePorts();
+         foreach(QSerialPortInfo info, infoList) {
+             if (info.productIdentifier() != 0) ui->comboBox_ports->addItem(info.portName());
+
+             qDebug() << info.vendorIdentifier();
+             qDebug() << info.productIdentifier();
+         }
          return;
     } else {
 //        m_serial->setBaudRate(QSerialPort::Baud9600);
@@ -458,6 +502,12 @@ void MainWindow::on_pushButton_start_clicked()
         myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
         freqs[i] = "0";
         spans[i] = "0";
+        above_threshold[i] = false;
+        start_res[i] = 0;
+        start_res_temp[i] = 0;
+        end_res[i] = 0;
+        maxi_res[i] = 0;
+        find_max[i] = false;
     }
 
     clear_SpanFreq();

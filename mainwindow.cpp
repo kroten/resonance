@@ -19,6 +19,8 @@ QList<QChart*> myChartList;
 QList<ChartView*> myChartViewList;
 QList<QSplineSeries*> mySplineSeriesList;
 
+QFile mfile;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow),
@@ -149,6 +151,38 @@ void MainWindow::ReadData(){
                 ending = false;
                 ui->label_frequency->setText("0");
                 qDebug() << "in_ending";
+
+                if (ui->checkBox_save->isChecked()){
+                    mfile.close();
+                    mfile.open(QIODevice::ReadWrite);
+                    QByteArray ba;
+                    QString str = "max:\n";
+                    ba = str.toUtf8();
+                    ba.toBase64();
+                    mfile.write(ba);
+                    str = freqs[0];
+                    for (int l = 1; l < 8; l++){
+                        str.append("," + freqs[l]);
+                    }
+                    str.append("\n");
+                    ba = str.toUtf8();
+                    ba.toBase64();
+                    mfile.write(ba);
+                    str = "span:\n";
+                    ba = str.toUtf8();
+                    ba.toBase64();
+                    mfile.write(ba);
+                    str = spans[0];
+                    for (int l = 1; l < 8; l++){
+                        str.append("," + spans[l]);
+                    }
+                    str.append("\n");
+                    ba = str.toUtf8();
+                    ba.toBase64();
+                    mfile.write(ba);
+
+                    mfile.close();
+                }
             }
             if (finish){
                 unlocked_all();
@@ -161,7 +195,7 @@ void MainWindow::ReadData(){
                 ui->pushButton_stop->setDisabled(1);
                 ui->comboBox_ports->setEnabled(1);
                 max = 18;
-                qDebug() << "in_finish";
+                qDebug() << "in_finish"; 
             }
             if (datas){
                 qDebug() << element_num;
@@ -226,6 +260,17 @@ void MainWindow::ReadData(){
                             freqs[l] = values[8];
                         }
                     } // ВОТ ТУТ ЖАРА ЗАКАНЧИВАЕТСЯ
+                }
+                if (ui->checkBox_save->isChecked()){
+                    QString str = values[8];
+                    for (int l = 0; l < 8; l++){
+                        str.append("," + values[l]);
+                    }
+                    str.append("\n");
+                    QByteArray ba;
+                    ba = str.toUtf8();
+                    ba.toBase64();
+                    mfile.write(ba);
                 }
             }
         }
@@ -480,6 +525,44 @@ void MainWindow::on_pushButton_view_clicked()
 
 void MainWindow::on_pushButton_start_clicked()
 {
+    if(ui->checkBox_save->isChecked()){
+        mfile.setFileName("");
+        bool bOk;
+        QString str = QInputDialog::getText( 0,
+                                             "Set file name",
+                                             "File name:",
+                                             QLineEdit::Normal,
+                                             "",
+                                             &bOk
+                                            );
+        if (!bOk) {
+            // Была нажата кнопка Cancel
+            ui->checkBox_save->setChecked(0);
+        } else {
+            QString name = ui->lineEdit_directory->text();
+            QDir dir(name);
+            if (dir.exists()){
+                qDebug() << "директория на месте";
+            } else {
+                 dir.mkdir(name);
+            }
+            name.append("/" + str + ".csv");
+            mfile.setFileName(name);
+            mfile.open(QIODevice::WriteOnly);
+
+            QByteArray ba;
+            QString str = "                        ";
+            ba = str.toUtf8();
+            ba.toBase64();
+            for (int i = 0; i < 5; i++){
+                mfile.write(ba);
+            }
+            str = "\nfreq, v0, v1, v2, v3, v4, v5, v6, v7\n";
+            ba = str.toUtf8();
+            ba.toBase64();
+            mfile.write(ba);
+        }
+    }
     QByteArray ba;
     QString str = "^s_";
     str.append(ui->lineEdit_start->text());
@@ -500,8 +583,8 @@ void MainWindow::on_pushButton_start_clicked()
         mySplineSeriesList.at(i)->clear();
         myChartList[i]->axes(Qt::Horizontal).first()->setRange(ui->lineEdit_start->text().toDouble(), ui->lineEdit_stop->text().toDouble());
         myChartList[i]->axes(Qt::Vertical).first()->setRange(0, 20);
-        freqs[i] = "0";
-        spans[i] = "0";
+        freqs[i] = "0.00";
+        spans[i] = "0.00";
         above_threshold[i] = false;
         start_res[i] = 0;
         start_res_temp[i] = 0;
